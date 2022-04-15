@@ -15,8 +15,8 @@ class TrimmerView extends StatefulWidget {
 class _TrimmerViewState extends State<TrimmerView> {
   final Trimmer _trimmer = Trimmer();
 
-  double _startValue = 0.0;
-  double _endValue = 0.0;
+  double _startValue = 60;
+  double _endValue = 70;
 
   bool _isPlaying = false;
   bool _progressVisibility = false;
@@ -92,10 +92,11 @@ class _TrimmerViewState extends State<TrimmerView> {
                   ),
                   Center(
                     child: TrimEditor(
+                      moveEndPosBy: -50,
                       trimmer: _trimmer,
                       viewerHeight: 50.0,
                       viewerWidth: MediaQuery.of(context).size.width,
-                      maxVideoLength: const Duration(seconds: 10),
+                      maxVideoLength: const Duration(seconds: 60),
                       onChangeStart: (value) {
                         _startValue = value;
                       },

@@ -100,9 +100,8 @@ class TrimEditor extends StatefulWidget {
   /// total duration of the video.
   final int sideTapSize;
 
-  final double startPos;
-
-  final double endPos;
+  final double moveStartPosBy;
+  final double moveEndPosBy;
 
   /// Widget for displaying the video trimmer.
   ///
@@ -183,9 +182,9 @@ class TrimEditor extends StatefulWidget {
     this.maxVideoLength = const Duration(milliseconds: 0),
     this.circleSize = 5.0,
     this.borderWidth = 3,
-    this.startPos = 0.0,
-    this.endPos = 0.0,
     this.scrubberWidth = 1,
+    this.moveEndPosBy = 0.0,
+    this.moveStartPosBy = 0.0,
     this.circleSizeOnDrag = 8.0,
     this.circlePaintColor = Colors.white,
     this.borderPaintColor = Colors.white,
@@ -251,9 +250,6 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
   void initState() {
     super.initState();
 
-    _videoStartPos = widget.startPos;
-    _videoEndPos = widget.endPos;
-
     widget.trimmer.eventStream.listen((event) {
       if (event == TrimmerEvent.initialized) {
         //The video has been initialized, now we can load stuff
@@ -303,6 +299,26 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
                 _animationController!.stop();
               }
             });
+
+          double dxCalculate(double sec) {
+            return _thumbnailViewerW * sec / (_videoDuration / 1000);
+          }
+
+          if (widget.moveEndPosBy >= 0) {
+            _endPos += Offset(dxCalculate(widget.moveEndPosBy), 0);
+            _onEndDragged();
+          } else {
+            _endPos -= Offset(dxCalculate(widget.moveEndPosBy * -1), 0);
+            _onEndDragged();
+          }
+          assert(widget.moveStartPosBy >= 0);
+          _startPos += Offset(dxCalculate(widget.moveStartPosBy), 0);
+          _onStartDragged();
+          videoPlayerController.seekTo(
+            Duration(
+              milliseconds: (widget.moveStartPosBy * 1000).toInt(),
+            ),
+          );
         });
       }
     });
