@@ -100,6 +100,10 @@ class TrimEditor extends StatefulWidget {
   /// total duration of the video.
   final int sideTapSize;
 
+  final double startPos;
+
+  final double endPos;
+
   /// Widget for displaying the video trimmer.
   ///
   /// This has frame wise preview of the video with a
@@ -179,6 +183,8 @@ class TrimEditor extends StatefulWidget {
     this.maxVideoLength = const Duration(milliseconds: 0),
     this.circleSize = 5.0,
     this.borderWidth = 3,
+    this.startPos = 0.0,
+    this.endPos = 0.0,
     this.scrubberWidth = 1,
     this.circleSizeOnDrag = 8.0,
     this.circlePaintColor = Colors.white,
@@ -244,6 +250,9 @@ class _TrimEditorState extends State<TrimEditor> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+
+    _videoStartPos = widget.startPos;
+    _videoEndPos = widget.endPos;
 
     widget.trimmer.eventStream.listen((event) {
       if (event == TrimmerEvent.initialized) {
