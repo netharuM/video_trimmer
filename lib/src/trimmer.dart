@@ -4,6 +4,7 @@ import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
 import 'package:ffmpeg_kit_flutter/ffmpeg_kit_config.dart';
 import 'package:ffmpeg_kit_flutter/ffmpeg_session.dart';
 import 'package:ffmpeg_kit_flutter/return_code.dart';
+import 'package:ffmpeg_kit_flutter/session_state.dart';
 import 'package:path/path.dart';
 
 import 'package:flutter/material.dart';
@@ -279,6 +280,7 @@ class Trimmer {
     String? ffmpegCommand,
     String? customVideoFormat,
     String addToEndOfOutPutPath = '',
+    bool ignoreRC = false,
     int? fpsGIF,
     int? scaleGIF,
     String? videoFolderName,
@@ -367,9 +369,13 @@ class Trimmer {
 
     debugPrint("FFmpeg process exited with state $state and rc $returnCode");
 
-    if (ReturnCode.isSuccess(returnCode)) {
+    if ((ReturnCode.isSuccess(returnCode) || ignoreRC) &&
+        (await _ffmpegSession.getState()) == SessionState.completed) {
       debugPrint("FFmpeg processing completed successfully.");
       debugPrint('Video successfuly saved');
+      if ((await _ffmpegSession.getState()) == SessionState.completed) {
+        debugPrint('Completed with rc $returnCode state : state');
+      }
       return _outputPath;
     } else {
       debugPrint("FFmpeg processing failed.");
