@@ -168,6 +168,7 @@ class Trimmer {
     FileFormat? outputFormat,
     String? ffmpegCommand,
     String? customVideoFormat,
+    String addToEndOfPath = '',
     int? fpsGIF,
     int? scaleGIF,
     String? videoFolderName,
@@ -196,7 +197,8 @@ class Trimmer {
 
     videoFolderName ??= "Trimmer";
 
-    videoFileName ??= "${_videoName}_trimmed:$formattedDateTime";
+    videoFileName ??=
+        "${_videoName}_trimmed:${formattedDateTime}_$addToEndOfPath";
 
     videoFileName = videoFileName.replaceAll(' ', '_');
 
@@ -276,6 +278,7 @@ class Trimmer {
     FileFormat? outputFormat,
     String? ffmpegCommand,
     String? customVideoFormat,
+    String addToEndOfOutPutPath = '',
     int? fpsGIF,
     int? scaleGIF,
     String? videoFolderName,
@@ -304,7 +307,8 @@ class Trimmer {
 
     videoFolderName ??= "Trimmer";
 
-    videoFileName ??= "${_videoName}_trimmed:$formattedDateTime";
+    videoFileName ??=
+        "${_videoName}_trimmed:${formattedDateTime}_$addToEndOfOutPutPath";
 
     videoFileName = videoFileName.replaceAll(' ', '_');
 
