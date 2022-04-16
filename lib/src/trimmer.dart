@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
 import 'package:ffmpeg_kit_flutter/ffmpeg_kit_config.dart';
+import 'package:ffmpeg_kit_flutter/ffmpeg_session.dart';
 import 'package:ffmpeg_kit_flutter/return_code.dart';
 import 'package:path/path.dart';
 
@@ -265,6 +266,112 @@ class Trimmer {
       }
     });
 
+    // return _outputPath;
+  }
+
+  Future<String?> saveTrimmedVideoAsync({
+    required double startValue,
+    required double endValue,
+    bool applyVideoEncoding = false,
+    FileFormat? outputFormat,
+    String? ffmpegCommand,
+    String? customVideoFormat,
+    int? fpsGIF,
+    int? scaleGIF,
+    String? videoFolderName,
+    String? videoFileName,
+    StorageDir? storageDir,
+  }) async {
+    final String _videoPath = currentVideoFile!.path;
+    final String _videoName = basename(_videoPath).split('.')[0];
+
+    String _command;
+
+    // Formatting Date and Time
+    String dateTime = DateFormat.yMMMd()
+        .addPattern('-')
+        .add_Hms()
+        .format(DateTime.now())
+        .toString();
+
+    // String _resultString;
+    String _outputPath;
+    String? _outputFormatString;
+    String formattedDateTime = dateTime.replaceAll(' ', '');
+
+    debugPrint("DateTime: $dateTime");
+    debugPrint("Formatted: $formattedDateTime");
+
+    videoFolderName ??= "Trimmer";
+
+    videoFileName ??= "${_videoName}_trimmed:$formattedDateTime";
+
+    videoFileName = videoFileName.replaceAll(' ', '_');
+
+    String path = await _createFolderInAppDocDir(
+      videoFolderName,
+      storageDir,
+    ).whenComplete(
+      () => debugPrint("Retrieved Trimmer folder"),
+    );
+
+    Duration startPoint = Duration(milliseconds: startValue.toInt());
+    Duration endPoint = Duration(milliseconds: endValue.toInt());
+
+    // Checking the start and end point strings
+    debugPrint("Start: ${startPoint.toString()} & End: ${endPoint.toString()}");
+
+    debugPrint(path);
+
+    if (outputFormat == null) {
+      outputFormat = FileFormat.mp4;
+      _outputFormatString = outputFormat.toString();
+      debugPrint('OUTPUT: $_outputFormatString');
+    } else {
+      _outputFormatString = outputFormat.toString();
+    }
+
+    String _trimLengthCommand =
+        ' -ss $startPoint -i "$_videoPath" -t ${endPoint - startPoint} -avoid_negative_ts make_zero ';
+
+    if (ffmpegCommand == null) {
+      _command = '$_trimLengthCommand -c:a copy ';
+
+      if (!applyVideoEncoding) {
+        _command += '-c:v copy ';
+      }
+
+      if (outputFormat == FileFormat.gif) {
+        fpsGIF ??= 10;
+        scaleGIF ??= 480;
+        _command =
+            '$_trimLengthCommand -vf "fps=$fpsGIF,scale=$scaleGIF:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 ';
+      }
+    } else {
+      _command = '$_trimLengthCommand $ffmpegCommand ';
+      _outputFormatString = customVideoFormat;
+    }
+
+    _outputPath = '$path$videoFileName$_outputFormatString';
+
+    _command += '"$_outputPath"';
+
+    FFmpegSession _ffmpegSession = await FFmpegKit.execute(_command);
+    final state =
+        FFmpegKitConfig.sessionStateToString(await _ffmpegSession.getState());
+    final returnCode = await _ffmpegSession.getReturnCode();
+
+    debugPrint("FFmpeg process exited with state $state and rc $returnCode");
+
+    if (ReturnCode.isSuccess(returnCode)) {
+      debugPrint("FFmpeg processing completed successfully.");
+      debugPrint('Video successfuly saved');
+      return _outputPath;
+    } else {
+      debugPrint("FFmpeg processing failed.");
+      debugPrint('Couldn\'t save the video');
+      return null;
+    }
     // return _outputPath;
   }
 
